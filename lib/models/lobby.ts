@@ -2,12 +2,14 @@ import { Document, Types , Schema,  models, model, Model} from "mongoose";
 
 export interface ILobby extends Document {
   name: string;
+  description:string
   owner: Types.ObjectId;
   members: Types.ObjectId[];
   inviteCode: string;
   isPrivate: boolean;
   createdAt: Date;
   updatedAt: Date;
+  
 }
 
 const LobbySchema = new Schema<ILobby>(
@@ -17,6 +19,12 @@ const LobbySchema = new Schema<ILobby>(
       required: true,
       trim: true,
     },
+
+    description: {
+      type: String,
+      required: true,
+      trim:true
+    }, 
 
     owner: {
       type: Schema.Types.ObjectId,

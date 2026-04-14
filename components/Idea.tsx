@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Idea } from '@/lib/types/types-ideas'
+import type { Idea } from '@/lib/types/types.project'
 
 type Props = {
   idea: Idea

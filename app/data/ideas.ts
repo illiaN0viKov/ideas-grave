@@ -1,4 +1,4 @@
-import { Idea, User, Suggestion } from "../../lib/types/types-ideas";
+import { Idea, User, Suggestion } from "../../lib/types/types.project";
 
 // --- Users ---
 export const users: User[] = [

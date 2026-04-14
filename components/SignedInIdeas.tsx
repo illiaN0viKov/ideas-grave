@@ -1,9 +1,9 @@
 import Ideas from "@/components/Ideas"
-import type { Idea } from "@/lib/types/types-ideas"
+import type { IdeaType } from "@/lib/types/types.project"
 
 type Props = {
   selectedLobbyTitle: string
-  selectedIdeas: Idea[]
+  selectedIdeas: IdeaType[]
 }
 
 export default function SignedInIdeas({ selectedLobbyTitle, selectedIdeas }: Props) {
