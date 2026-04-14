@@ -73,7 +73,7 @@ async function handleSubmit(e: React.FormEvent) {
         setErrors({ general: message || 'Failed to sign up' })
       }
     } else {
-      router.push('/dashboard')
+      router.push('/')
       router.refresh()
     }
   } catch (err) {

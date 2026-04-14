@@ -53,7 +53,7 @@ async function handleSubmit(e: React.FormEvent) {
         setErrors({ general: message || 'Failed to sign in' })
       }
     } else {
-      router.push('/dashboard')
+      router.push('/')
       router.refresh()
     }
   } catch (err) {
