@@ -23,6 +23,8 @@ export default function LobbiesClient({ lobbies, onSelectLobby  }:
   { lobbies: LobbyType[], onSelectLobby: (lobby: LobbyType | null) => void; }) {
   const [selectedLobbyId, setSelectedLobbyId] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false)
+      const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    
   
 
   
@@ -49,11 +51,12 @@ export default function LobbiesClient({ lobbies, onSelectLobby  }:
 
       async function handleDelete() {
         if (!selectedLobbyId) return;
+        setShowDeleteConfirm(false)
 
       await deleteLobby({ lobbyId: selectedLobbyId })
       }
 
-        // update your click handler:
+
           const handleSelectLobby = (lobby: LobbyType) => {
             setSelectedLobbyId(lobby._id.toString());
             onSelectLobby(lobby);
@@ -146,7 +149,7 @@ export default function LobbiesClient({ lobbies, onSelectLobby  }:
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
-                    onClick={handleDelete}
+                    onClick={()=>setShowDeleteConfirm(true)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
@@ -209,6 +212,27 @@ export default function LobbiesClient({ lobbies, onSelectLobby  }:
         </form>
       </DialogContent>
     </Dialog>
+
+
+            {/* Delete Confirmation Dialog */}
+        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Idea?</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete the idea? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Delete Idea
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
 
     </section>

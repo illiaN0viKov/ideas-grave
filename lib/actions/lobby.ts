@@ -5,6 +5,7 @@ import connectDB from "@/lib/db"
 import { getSession } from "@/lib/auth/auth"
 import { Lobby } from "@/lib/models/lobby"
 import { revalidatePath } from "next/cache"
+import { Idea } from "../models/idea"
 
 export type CreateLobbyParams = {
   name: string
@@ -83,6 +84,7 @@ return JSON.parse(JSON.stringify(lobby))
 export async function deleteLobby({ lobbyId }: { lobbyId: string }) {
   await connectDB()
 
+  await Idea.deleteMany({ lobby: new Types.ObjectId(lobbyId) })
   await Lobby.findByIdAndDelete(lobbyId)
   revalidatePath("/")
 }

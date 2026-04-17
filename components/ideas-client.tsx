@@ -6,9 +6,12 @@ type Props = {
   lobby: LobbyType
   ideas: IdeaType[]
   onCreate:()=>void
+  onIdeaSelect: (idea: IdeaType | null) => void
+
+
 }
 
-export default function IdeasClient({ lobby, ideas, onCreate }: Props) {
+export default function IdeasClient({ lobby, ideas, onCreate, onIdeaSelect }: Props) {
   return (
     <section className="rounded-[2rem] border border-black/10 bg-black/5 p-8 sm:p-10">
       
@@ -35,7 +38,7 @@ export default function IdeasClient({ lobby, ideas, onCreate }: Props) {
       {/* Content */}
       <div className="space-y-4">
         {ideas.length > 0 ? (
-          <Ideas ideas={ideas} />
+          <Ideas ideas={ideas} selectIdea={onIdeaSelect}/>
         ) : (
           <div className="rounded-3xl border border-black/10 bg-white p-8 text-slate-600">
             No ideas have been added yet.

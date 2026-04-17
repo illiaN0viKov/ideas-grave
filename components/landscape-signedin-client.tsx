@@ -40,11 +40,11 @@ useEffect(() => {
 
       <div className="lg:col-span-2">
         {selectedLobby && !selectedIdea && (
-          <IdeasClient lobby={selectedLobby} ideas={selectedIdeas} onCreate={() => setRefreshIdeas(prev => prev + 1)} />
+          <IdeasClient lobby={selectedLobby} ideas={selectedIdeas} onCreate={() => setRefreshIdeas(prev => prev + 1)} onIdeaSelect={setSelectedIdea} />
         )}
 
         {selectedLobby && selectedIdea && (
-            <IdeaView idea={selectedIdea}/>
+            <IdeaView idea={selectedIdea} selectIdea={setSelectedIdea} lobby={selectedLobby} onDelete={() => setRefreshIdeas(prev => prev + 1)} />
         )}
 
         {selectedLobby && isPending && (

@@ -101,7 +101,7 @@ export async function updateIdea({ ideaId, title, description, status }: UpdateI
   const updatedIdea = await Idea.findByIdAndUpdate(ideaId, { $set: update }, { new: true })
 
   revalidatePath("/")
-  return updatedIdea
+  return JSON.parse(JSON.stringify(updatedIdea))
 }
 
 export async function deleteIdea({ ideaId }: { ideaId: string }) {
