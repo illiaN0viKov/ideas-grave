@@ -57,7 +57,7 @@ export default function LobbiesCreateDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button
           variant="outline"
           className="inline-flex h-11 items-center justify-center rounded-3xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-black/5"

@@ -48,7 +48,7 @@ export async function createLobby({
   revalidatePath("/");
 
 
-  return lobby
+return JSON.parse(JSON.stringify(lobby))
 }
 
 export async function updateLobby({
@@ -75,7 +75,16 @@ export async function updateLobby({
     { new: true }
   )
 
-  return lobby
+  revalidatePath("/");
+
+return JSON.parse(JSON.stringify(lobby))
+}
+
+export async function deleteLobby({ lobbyId }: { lobbyId: string }) {
+  await connectDB()
+
+  await Lobby.findByIdAndDelete(lobbyId)
+  revalidatePath("/")
 }
 
 function generateInviteCode(length = 8) {

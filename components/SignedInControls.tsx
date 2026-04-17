@@ -22,12 +22,25 @@ export default function SignedInControls({ email }: { email?: string }) {
   }
 
   return (
-    <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-      <p className="text-sm text-slate-300">
-        Signed in as <span className="font-semibold text-white">{email ?? "you"}</span>
+    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-black/10 pt-4">
+      
+      <p className="text-sm text-black/70">
+        {email ? (
+          <>
+            Signed in as <span className="text-black font-medium">{email}</span>
+          </>
+        ) : (
+          "Signed in"
+        )}
       </p>
-      <Button variant="secondary" size="lg" onClick={handleSignOut} disabled={loading}>
-        {loading ? "Signing out..." : "Log out"}
+
+      <Button
+        variant="outline"
+        onClick={handleSignOut}
+        disabled={loading}
+        className="text-black hover:bg-black/5"
+      >
+        {loading ? "..." : "Log out"}
       </Button>
     </div>
   )

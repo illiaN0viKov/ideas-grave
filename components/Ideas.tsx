@@ -1,22 +1,18 @@
 import React from 'react'
-import type { Idea as IdeaType } from '@/lib/types/types.project'
+import type { IdeaType } from '@/lib/types/types.project'
 import Idea from './Idea'
 
-
 type Props = {
-    ideas:IdeaType[]
+  ideas: IdeaType[]
 }
 
-const Ideas = (props: Props) => {
+const Ideas = ({ ideas }: Props) => {
   return (
-    <div>
-        {props.ideas.map((idea)=>{ return (
-            <div key={idea.id}>
-                <Idea idea={idea}/>
-            </div>
-        )})}
+    <div className="grid mx-auto grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 ">
+      {ideas.map((idea) => (
+        <Idea key={idea._id.toString()} idea={idea} />
+      ))}
     </div>
   )
 }
-
 export default Ideas

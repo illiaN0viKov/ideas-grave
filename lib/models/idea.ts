@@ -20,8 +20,8 @@ const IdeaSchema = new Schema<IIdea>(
 
     description: {
       type: String,
-      required: true,
       trim: true,
+      default:""
     },
 
     lobby: {
