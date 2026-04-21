@@ -19,11 +19,14 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Dialog } from "./ui/dialog";
 
-export default function LobbiesClient({ lobbies, onSelectLobby  }: 
-  { lobbies: LobbyType[], onSelectLobby: (lobby: LobbyType | null) => void; }) {
+export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,onUpdateLobby  }: 
+  { lobbies: LobbyType[], onSelectLobby: (lobby: LobbyType | null) => void, onDeleteLobby:()=>void,
+    onUpdateLobby:(lobby: LobbyType | null) => void,
+   }) {
   const [selectedLobbyId, setSelectedLobbyId] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false)
       const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+      
     
   
 
@@ -51,6 +54,7 @@ export default function LobbiesClient({ lobbies, onSelectLobby  }:
 
       async function handleDelete() {
         if (!selectedLobbyId) return;
+        onDeleteLobby()
         setShowDeleteConfirm(false)
 
       await deleteLobby({ lobbyId: selectedLobbyId })
@@ -75,6 +79,12 @@ export default function LobbiesClient({ lobbies, onSelectLobby  }:
             name: formData.name,
             description: formData.description,
           });
+
+          onUpdateLobby({
+            ...selectedLobby!,
+            name: formData.name,
+            description: formData.description,
+          })
 
           setIsEditing(false);
         } catch (err) {

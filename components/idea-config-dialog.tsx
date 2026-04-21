@@ -57,6 +57,12 @@ export default function IdeasConfigDialog({
             status,
             description
             });
+            selectIdea({
+             ...idea!,
+            title,
+            description,
+            status
+            })
             setOpen(false);
         } catch (err) {
             console.error(err);

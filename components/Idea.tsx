@@ -4,9 +4,12 @@ import type { IdeaType } from '@/lib/types/types.project'
 
 type Props = {
   idea: IdeaType;
+    className1?: string
+    className2?:string
+
 };
 
-const Idea = ({ idea }: Props) => {
+const Idea = ({ idea, className1, className2  }: Props) => {
 
   const statusImages = {
     active: "/live.png",
@@ -18,8 +21,14 @@ const radius = 86;
 
 return (
   <div className="flex items-center justify-center ">
-    <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 flex items-center justify-center">
-      
+    
+      <div
+        className={`relative ${
+          className1
+            ? className1
+            : "w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56"
+        } flex items-center justify-center`}
+      >      
       <svg className="absolute w-full h-full" viewBox="0 0 200 200">
         <defs>
           <path
@@ -47,7 +56,13 @@ return (
         </text>
       </svg>
 
-      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-md shadow-black/30 z-10">
+      <div className={`
+      
+      ${className2 ? 
+        className2 : "w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32"
+      }
+        
+        rounded-full overflow-hidden shadow-md shadow-black/30 z-10`}>
         <img
           src={statusImages[idea.status]}
           alt="status"

@@ -1,55 +1,181 @@
+"use client"
+
 import { IdeaType, LobbyType } from "@/lib/types/types.project"
-import React from "react"
+import React, { useEffect, useState } from "react"
 import Idea from "./Idea"
 import IdeasConfigDialog from "./idea-config-dialog"
 import { useSession } from "@/lib/auth/auth-client"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "./ui/dialog"
+import { Textarea } from "./ui/textarea"
+import { Button } from "./ui/button"
+import { Plus, Pencil } from "lucide-react"
+import { updateIdea } from "@/lib/actions/idea"
+import SuggestionsList from "./suggestions"
+import SuggestVoteDialog from "./suggest-vote-dialog"
 
 interface Props {
-    idea:IdeaType
-    lobby:LobbyType
+    idea: IdeaType
+    lobby: LobbyType
     selectIdea: (idea: IdeaType | null) => void
-    onDelete: ()=>void
-
+    onDelete: () => void
 }
 
-export default function IdeaView ({idea, selectIdea, lobby, onDelete} : Props) {
+export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
+
+    useEffect(() => {
+        if (idea.lobby.toString() !== lobby._id.toString()) {
+            selectIdea(null)
+        }
+    }, [idea, lobby, selectIdea])
 
     const session = useSession()
-
-
     const isIdeaOwner = session.data?.user.id.toString() === idea.creator.toString()
     const isLobbyOwner = session.data?.user.id.toString() === lobby.owner.toString()
 
+    const [open, setOpen] = useState(false)
+    const [description, setDescription] = useState(idea.description ?? "")
+    const [saving, setSaving] = useState(false)
+
+    async function handleSaveDescription() {
+        if (!description.trim()) return
+        setSaving(true)
+        try {
+            await updateIdea({ ideaId: idea._id.toString(), description: description.trim() })
+            selectIdea({ ...idea, description })
+            setOpen(false)
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setSaving(false)
+        }
+    }
 
     return (
-<section className="rounded-[2rem] border border-black/10 bg-black/5 p-8 sm:p-10">
-      
-      {/* Header */}
-      <div className="space-y-2 border-b border-black/10 pb-6">
-        <p className="text-sm uppercase tracking-[0.3em] text-slate-500">
-          Lobby ideas
-        </p>
+        <div className="grid items-start gap-12 lg:grid-cols-[1.2fr_0.8fr]">
 
-        <h2 className="text-2xl font-semibold uppercase text-slate-950">
-          {lobby.name}
-        </h2>
+            {/* Left — IdeaView */}
+            <section className="rounded-[2rem] border border-black/10 bg-black/5 p-8 sm:p-10">
 
-        <p className="text-sm text-slate-500">
-          {lobby.description}
-        </p>
-      </div>
+                <div className="space-y-2 border-b border-black/10 pb-6">
+                    <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Lobby ideas</p>
+                    <h2 className="text-2xl font-semibold uppercase text-slate-950">{lobby.name}</h2>
+                    <p className="text-sm text-slate-500">{lobby.description}</p>
+                </div>
 
-      {/* Actions */}
-      <div className="flex justify-start py-4">
-        <IdeasConfigDialog idea={idea} onDelete={onDelete}  isIdeaOwner={isIdeaOwner} isLobbyOwner={isLobbyOwner} 
-        selectIdea={selectIdea}/>
-      </div>
+                <div className="flex justify-start py-4">
+                    <IdeasConfigDialog
+                        idea={idea}
+                        onDelete={onDelete}
+                        isIdeaOwner={isIdeaOwner}
+                        isLobbyOwner={isLobbyOwner}
+                        selectIdea={selectIdea}
+                    />
+                </div>
+                
 
-      {/* Content */}
-      <div className="flex space-y-4 justify-start ">
-            <Idea idea={idea}/>
-      </div>
-      
-    </section>
+            <div className="flex items-center justify-between mt-4">
+                
+                <Idea idea={idea} className1="w-52 h-52" className2="w-36 h-36"/>
+
+                <SuggestVoteDialog/>
+            </div>
+
+            </section>
+
+        <div className="flex flex-col gap-6">
+
+
+            {/* Right — Notes */}
+            <div className="rounded-2xl border border-black/15 bg-white p-5">
+                <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Idea Notes</p>
+                    {idea.description && isIdeaOwner && (
+                        <Dialog open={open} onOpenChange={setOpen}>
+                            <DialogTrigger asChild>
+                                <button className="text-slate-400 hover:text-slate-700 transition">
+                                    <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle className="text-base font-semibold">Edit notes</DialogTitle>
+                                </DialogHeader>
+                                <Textarea
+                                    rows={5}
+                                    placeholder="Describe this idea..."
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="resize-none rounded-xl border-black/10 bg-black/5 text-sm focus-visible:ring-0"
+                                />
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                                    <Button onClick={handleSaveDescription} disabled={saving || !description.trim()}>
+                                        {saving ? "Saving..." : "Save"}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                </div>
+
+                
+
+                {idea.description ? (
+                    <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-wrap break-words">
+                        {idea.description}
+                    </p>
+                ) : isIdeaOwner  ? ( 
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
+                            <button className="group flex w-full items-center justify-center rounded-xl border border-dashed border-black/20 py-6 transition hover:border-black/40 hover:bg-black/5">
+                                <Plus className="h-4 w-4 text-slate-400 group-hover:text-slate-700 transition" />
+                            </button>
+                        </DialogTrigger>
+
+                        <DialogContent className="max-w-md">
+                            <DialogHeader>
+                                <DialogTitle className="text-base font-semibold">Add notes</DialogTitle>
+                            </DialogHeader>
+                            <Textarea
+                                rows={5}
+                                placeholder="Describe this idea..."
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="resize-none rounded-xl border-black/10 bg-black/5 text-sm focus-visible:ring-0"
+                            />
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                                <Button onClick={handleSaveDescription} disabled={saving || !description.trim()}>
+                                    {saving ? "Saving..." : "Save"}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog> ) :
+                    (
+                          <div className="flex items-center justify-center py-6 text-xs text-slate-400">
+                        No notes
+                    </div>
+                )}
+
+            </div>
+
+                {/* Proposals History */}
+                <div className="rounded-2xl border border-black/15 bg-white p-5">
+                    <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Proposals History</p>
+                    </div>
+{/* 
+                    <div className="flex items-center justify-center py-6 text-s text-slate-400">
+                        No proposals/votes yet
+                    </div> */}
+
+                    <SuggestionsList/>
+
+                </div>
+
+        </div>
+
+
+        </div>
     )
 }

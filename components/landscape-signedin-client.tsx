@@ -31,12 +31,16 @@ useEffect(() => {
       console.error(err)
     }
   })
+
+  console.log(selectedLobby.description)
 }, [selectedLobby, refreshIdeas])
 
 
   return (
     <>
-      <LobbiesClient lobbies={lobbies} onSelectLobby={setSelectedLobby} />
+      <LobbiesClient lobbies={lobbies} onSelectLobby={setSelectedLobby} onDeleteLobby={() => setSelectedLobby(null)}
+        onUpdateLobby={(lobby)=>setSelectedLobby(lobby)}
+        />
 
       <div className="lg:col-span-2">
         {selectedLobby && !selectedIdea && (
@@ -44,7 +48,7 @@ useEffect(() => {
         )}
 
         {selectedLobby && selectedIdea && (
-            <IdeaView idea={selectedIdea} selectIdea={setSelectedIdea} lobby={selectedLobby} onDelete={() => setRefreshIdeas(prev => prev + 1)} />
+            <IdeaView idea={selectedIdea} selectIdea={setSelectedIdea}  lobby={selectedLobby} onDelete={() => setRefreshIdeas(prev => prev + 1)} />
         )}
 
         {selectedLobby && isPending && (

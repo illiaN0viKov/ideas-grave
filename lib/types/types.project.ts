@@ -29,3 +29,15 @@ export type IdeaType = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type SuggestionType = {
+  _id: string
+   author: string
+
+
+  idea: string
+  content: string
+
+  createdAt: string
+  updatedAt: string
+}
