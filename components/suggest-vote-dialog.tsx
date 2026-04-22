@@ -13,17 +13,29 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { boolean } from "better-auth"
+import { SuggestionType } from "@/lib/types/types.project"
+import { createSuggestion } from "@/lib/actions/suggestion"
+import { createVotingSession } from "@/lib/actions/vote"
 
 type Step = "suggestion" | "voting"
-type VoteType = "abandon" | "change_name" | null
+type VoteType = "abandon" | "change" | null
+type Props = {
+  onVoteStart:(value: boolean) => void
+  onSuggestChange?: () => void
+  ideaId:string
+  lobbyId:string
+}
 
-export default function SuggestVoteDialog() {
+export default function SuggestVoteDialog({onVoteStart, onSuggestChange, ideaId, lobbyId} : Props) {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState<Step>("suggestion")
   const [suggestionText, setSuggestionText] = useState("")
   const [voteType, setVoteType] = useState<VoteType>(null)
   const [newName, setNewName] = useState("")
   const [loading, setLoading] = useState(false)
+  
+  
 
   function handleClose() {
     setOpen(false)
@@ -37,8 +49,10 @@ export default function SuggestVoteDialog() {
     if (!suggestionText.trim()) return
     setLoading(true)
     try {
-      // await createSuggestion({ content: suggestionText })
+      await createSuggestion({ content: suggestionText, lobbyId, ideaId })
+      onSuggestChange?.()
       handleClose()
+
     } catch (err) {
       console.error(err)
     } finally {
@@ -48,10 +62,11 @@ export default function SuggestVoteDialog() {
 
   async function handleStartVote() {
     if (!voteType) return
-    if (voteType === "change_name" && !newName.trim()) return
+    if (voteType === "change" && !newName.trim()) return
     setLoading(true)
     try {
-      // await createVote({ type: voteType, newName: voteType === "change_name" ? newName : undefined })
+      await createVotingSession({ type: voteType, newName: voteType === "change" ? newName : undefined, ideaId })
+      onVoteStart(true)
       handleClose()
     } catch (err) {
       console.error(err)
@@ -154,7 +169,7 @@ export default function SuggestVoteDialog() {
                 </div>
               </div>
 
-              {voteType === "change_name" && (
+              {voteType === "change" && (
                 <div className="space-y-2">
                   <Label className="text-xs text-slate-500">Proposed name</Label>
                   <Textarea
@@ -172,7 +187,7 @@ export default function SuggestVoteDialog() {
               <Button variant="outline" onClick={handleClose}>Cancel</Button>
               <Button
                 onClick={handleStartVote}
-                disabled={loading || !voteType || (voteType === "change_name" && !newName.trim())}
+                disabled={loading || !voteType || (voteType === "change" && !newName.trim())}
               >
                 {loading ? "Starting..." : "Start vote"}
               </Button>

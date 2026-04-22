@@ -38,20 +38,6 @@ const VoteSchema = new Schema<IVote>(
       index: true,
     },
 
-    // changeVote: {
-    //   type: String,
-    //   enum: ["up", "down"],
-    //   required: true,
-    //   default:null
-    // },
-
-    // abandonVote: {
-    //   type: String,
-    //   enum: ["up", "down"],
-    //   required: true,
-    //     default:null
-
-    // },
 
         target: {
       type: String,

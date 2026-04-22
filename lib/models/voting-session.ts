@@ -3,9 +3,13 @@ import { Schema, model, models, Model, Types, Document } from "mongoose";
 export interface IVotingSession extends Document {
   idea: Types.ObjectId;
   status: "active" | "ended";
-
   result: "pending" | "approved" | "rejected";
+  type: "change" | "abandon";
+  initiator: Types.ObjectId;
 
+  payload?: {
+    newName?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +23,12 @@ const VotingSessionSchema = new Schema<IVotingSession>(
       index: true,
     },
 
+    initiator: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+
     status: {
       type: String,
       enum: ["active", "ended"],
@@ -30,6 +40,10 @@ const VotingSessionSchema = new Schema<IVotingSession>(
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
+    },
+
+    payload: {
+      newName: { type: String },
     },
   },
   {

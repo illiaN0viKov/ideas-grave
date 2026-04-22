@@ -6,6 +6,9 @@ import { getSession } from "@/lib/auth/auth"
 import { Lobby } from "@/lib/models/lobby"
 import { revalidatePath } from "next/cache"
 import { Idea } from "../models/idea"
+import { Vote } from "../models/vote"
+import { VotingSession } from "../models/voting-session"
+import { Suggestion } from "../models/suggest"
 
 export type CreateLobbyParams = {
   name: string
@@ -84,6 +87,12 @@ return JSON.parse(JSON.stringify(lobby))
 export async function deleteLobby({ lobbyId }: { lobbyId: string }) {
   await connectDB()
 
+  const ideas = await Idea.find({ lobby: new Types.ObjectId(lobbyId) }).lean()
+  const ideaIds = ideas.map(i => i._id)
+
+  await Vote.deleteMany({ idea: { $in: ideaIds } })
+  await VotingSession.deleteMany({ idea: { $in: ideaIds } })
+  await Suggestion.deleteMany({ idea: { $in: ideaIds } })
   await Idea.deleteMany({ lobby: new Types.ObjectId(lobbyId) })
   await Lobby.findByIdAndDelete(lobbyId)
   revalidatePath("/")

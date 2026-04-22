@@ -1,6 +1,6 @@
 "use client"
 
-import { IdeaType, LobbyType } from "@/lib/types/types.project"
+import { IdeaType, LobbyType, SuggestionType } from "@/lib/types/types.project"
 import React, { useEffect, useState } from "react"
 import Idea from "./Idea"
 import IdeasConfigDialog from "./idea-config-dialog"
@@ -12,6 +12,9 @@ import { Plus, Pencil } from "lucide-react"
 import { updateIdea } from "@/lib/actions/idea"
 import SuggestionsList from "./suggestions"
 import SuggestVoteDialog from "./suggest-vote-dialog"
+import VotingTracker from "./voting-tracker"
+import { getSuggestions } from "@/lib/actions/suggestion"
+import { getActiveVotingSession } from "@/lib/actions/vote"
 
 interface Props {
     idea: IdeaType
@@ -22,11 +25,20 @@ interface Props {
 
 export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
 
-    useEffect(() => {
-        if (idea.lobby.toString() !== lobby._id.toString()) {
-            selectIdea(null)
-        }
-    }, [idea, lobby, selectIdea])
+
+    // useEffect(() => {
+    // async function fetchSuggestions() {
+    //     try {
+    //     const suggestions = await getSuggestions(idea._id.toString())
+    //     setSuggestions(suggestions)
+    //     } catch (err) {
+    //     console.error(err)
+    //     }
+    // }
+    // fetchSuggestions()
+    // },  [idea, lobby, selectIdea])
+    
+    
 
     const session = useSession()
     const isIdeaOwner = session.data?.user.id.toString() === idea.creator.toString()
@@ -34,7 +46,34 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
 
     const [open, setOpen] = useState(false)
     const [description, setDescription] = useState(idea.description ?? "")
+    const [suggestions, setSuggestions] = useState<SuggestionType[] | []>([])
     const [saving, setSaving] = useState(false)
+
+    const [activeVoting, setActiveVoting] = useState(false)
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+
+    useEffect(() => {
+        async function fetchInitialData() {
+            try {
+                const [suggestions, activeSession] = await Promise.all([
+                    getSuggestions(idea._id.toString()),
+                    getActiveVotingSession(idea._id.toString()),
+                ])
+                setSuggestions(suggestions)
+                if (activeSession) {
+                    setActiveVoting(true)
+                    setActiveSessionId(activeSession._id)
+                } else {
+                    setActiveVoting(false)
+                    setActiveSessionId(null)
+                }
+            } catch (err) {
+                console.error(err)
+            }
+        }
+        fetchInitialData()
+    }, [idea, lobby, selectIdea])
+
 
     async function handleSaveDescription() {
         if (!description.trim()) return
@@ -49,6 +88,11 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
             setSaving(false)
         }
     }
+
+    async function refetchSuggestions() {
+        const suggestions = await getSuggestions(idea._id.toString())
+        setSuggestions(suggestions)
+        }
 
     return (
         <div className="grid items-start gap-12 lg:grid-cols-[1.2fr_0.8fr]">
@@ -74,10 +118,24 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
                 
 
             <div className="flex items-center justify-between mt-4">
-                
+
                 <Idea idea={idea} className1="w-52 h-52" className2="w-36 h-36"/>
 
-                <SuggestVoteDialog/>
+                    {activeVoting ? (
+                    <VotingTracker
+                        memberCount={lobby.members.length}
+                        ideaId={idea._id.toString()}
+                        onSessionEnd={() => {
+                            setActiveVoting(false)
+                            setActiveSessionId(null)
+                        }}/> 
+                    ) : (
+                        <SuggestVoteDialog onVoteStart={setActiveVoting} ideaId={idea._id.toString()} lobbyId={lobby._id.toString()} onSuggestChange={refetchSuggestions}/>
+
+                    )}
+
+
+
             </div>
 
             </section>
@@ -159,17 +217,15 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
 
             </div>
 
+
+
                 {/* Proposals History */}
                 <div className="rounded-2xl border border-black/15 bg-white p-5">
                     <div className="flex items-center justify-between mb-3">
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Proposals History</p>
                     </div>
-{/* 
-                    <div className="flex items-center justify-center py-6 text-s text-slate-400">
-                        No proposals/votes yet
-                    </div> */}
 
-                    <SuggestionsList/>
+                    <SuggestionsList suggests={suggestions}/>
 
                 </div>
 

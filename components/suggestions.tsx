@@ -1,73 +1,51 @@
-import { SuggestionType } from "@/lib/types/types.project";
+import { SuggestionType } from "@/lib/types/types.project"
 
-export const mockSuggestions = [
-  {
-    _id: "s1",
-    idea: "i1",
-    author: "u1",
-    content: "We could turn this idea into a mobile app with a simple onboarding flow.",
-    createdAt: "2026-04-20T10:15:00.000Z",
-    updatedAt: "2026-04-20T10:15:00.000Z",
-  },
-  {
-    _id: "s2",
-    idea: "i1",
-    author: "u2",
-    content: "Maybe start with a landing page to validate interest before building.",
-    createdAt: "2026-04-20T11:05:00.000Z",
-    updatedAt: "2026-04-20T11:05:00.000Z",
-  },
-  {
-    _id: "s3",
-    idea: "i1",
-    author: "u3",
-    content: "We should add a voting system so users can prioritize features.",
-    createdAt: "2026-04-20T12:30:00.000Z",
-    updatedAt: "2026-04-20T12:30:00.000Z",
-  },
-  {
-    _id: "s4",
-    idea: "i1",
-    author: "u1",
-    content: "Consider integrating notifications for updates and new proposals.",
-    createdAt: "2026-04-20T13:45:00.000Z",
-    updatedAt: "2026-04-20T13:45:00.000Z",
-  }
+const COLORS = [
+  "bg-violet-400",
+  "bg-sky-400",
+  "bg-emerald-400",
+  "bg-rose-400",
+  "bg-amber-400",
+  "bg-indigo-400",
 ]
 
-const authorColors: Record<string, string> = {
-  u1: "bg-violet-400",
-  u2: "bg-sky-400",
-  u3: "bg-emerald-400",
-  u4: "bg-rose-400",
-}
-
 function getColor(authorId: string) {
-  return authorColors[authorId] ?? "bg-slate-400"
+  let hash = 0
+
+  for (let i = 0; i < authorId.length; i++) {
+    hash = authorId.charCodeAt(i) + ((hash << 5) - hash)
+  }
+
+  return COLORS[Math.abs(hash) % COLORS.length]
 }
 
 interface Props {
-  suggests?: SuggestionType[]
+  suggests: SuggestionType[]
 }
 
 export default function SuggestionsList({ suggests }: Props) {
-  const items = suggests ?? mockSuggestions
+  const items = suggests
+
+  if (items.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-6 text-s text-slate-400">
+        No suggestions yet
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-3">
       {items.map((s) => (
-        <div key={s._id} className=" overflow-hidden">
+        <div key={s._id.toString()} className="overflow-hidden">
           
-          {/* Author bar */}
           <div className={`h-1 w-full ${getColor(s.author)}`} />
-          
+
           <div className="px-4 pt-3 pb-4">
-            {/* Author label */}
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
               {s.author}
             </p>
 
-            {/* Content */}
             <p className="text-sm leading-relaxed text-slate-700">
               {s.content}
             </p>

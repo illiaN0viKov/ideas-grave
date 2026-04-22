@@ -7,6 +7,9 @@ import connectDB from "@/lib/db"
 import { getSession } from "@/lib/auth/auth"
 import { Idea } from "@/lib/models/idea"
 import { Lobby } from "@/lib/models/lobby"
+import { Vote } from "../models/vote"
+import { VotingSession } from "../models/voting-session"
+import { Suggestion } from "../models/suggest"
 
 export type CreateIdeaParams = {
   title: string
@@ -134,6 +137,10 @@ export async function deleteIdea({ ideaId }: { ideaId: string }) {
     throw new Error("Only the lobby owner can delete ideas")
   }
 
+  await Vote.deleteMany({ idea: new Types.ObjectId(ideaId) })
+  await VotingSession.deleteMany({ idea: new Types.ObjectId(ideaId) })
+  await Suggestion.deleteMany({ idea: new Types.ObjectId(ideaId) })
   await Idea.findByIdAndDelete(ideaId)
+
   revalidatePath("/")
 }
