@@ -8,8 +8,8 @@ import { useSession } from "@/lib/auth/auth-client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "./ui/dialog"
 import { Textarea } from "./ui/textarea"
 import { Button } from "./ui/button"
-import { Plus, Pencil } from "lucide-react"
-import { updateIdea } from "@/lib/actions/idea"
+import { Plus, Pencil, Copy, Link, ArrowLeft } from "lucide-react"
+import { getIdeas, updateIdea } from "@/lib/actions/idea"
 import SuggestionsList from "./suggestions"
 import SuggestVoteDialog from "./suggest-vote-dialog"
 import VotingTracker from "./voting-tracker"
@@ -51,6 +51,13 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
 
     const [activeVoting, setActiveVoting] = useState(false)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+    const [currentIdea, setCurrentIdea] = useState<IdeaType>(idea)
+
+
+        function updateIdeaLocal(updated: IdeaType) {
+            setCurrentIdea(updated)
+            selectIdea(updated)
+        }
 
     useEffect(() => {
         async function fetchInitialData() {
@@ -92,6 +99,17 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
     async function refetchSuggestions() {
         const suggestions = await getSuggestions(idea._id.toString())
         setSuggestions(suggestions)
+
+        }
+
+        async function refetchIdea() {
+            const ideas = await getIdeas(lobby._id.toString())
+            const updated = ideas.find((i: IdeaType) => i._id.toString() === currentIdea._id.toString())
+            if (updated) updateIdeaLocal(updated)
+        }
+
+        async function refetchAll() {
+            await Promise.all([refetchSuggestions(), refetchIdea()])
         }
 
     return (
@@ -100,20 +118,68 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
             {/* Left — IdeaView */}
             <section className="rounded-[2rem] border border-black/10 bg-black/5 p-8 sm:p-10">
 
-                <div className="space-y-2 border-b border-black/10 pb-6">
-                    <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Lobby ideas</p>
-                    <h2 className="text-2xl font-semibold uppercase text-slate-950">{lobby.name}</h2>
-                    <p className="text-sm text-slate-500">{lobby.description}</p>
+            {/* Header */}
+            <div className="space-y-2 border-b border-black/10 pb-6">
+            <div className="flex items-start justify-between">
+
+                <Button
+                    variant="ghost"
+                    size="lg"
+                    onClick={() => selectIdea(null)}
+                    className="h-8 w-8 p-0 -ml-2"
+                >
+                    <ArrowLeft className="h-8 w-8" />
+                </Button>
+
+                <Dialog>
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="rounded-xl text-xs gap-1.5">
+                    <Link className="h-3.5 w-3.5" />
+                    Invite
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                    <DialogTitle className="text-base font-semibold">Invite to lobby</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-4 py-3">
+                    <p className="flex-1 font-mono text-sm tracking-widest text-slate-700">
+                        {lobby.inviteCode}
+                    </p>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0"
+                        onClick={() => navigator.clipboard.writeText(lobby.inviteCode)}
+                    >
+                        <Copy className="h-4 w-4" />
+                    </Button>
+                    </div>
+                </DialogContent>
+                </Dialog>
+            </div>
+
+                <h2 className="text-2xl font-semibold uppercase text-slate-950">
+                    {lobby.name}
+                </h2>
+
+                <p className="text-lg text-slate-500">
+                    {lobby.description}
+                </p>
+
+                <p className="text-md text-slate-400">
+                    {lobby.members.length} active {lobby.members.length === 1 ? "member" : "members"}
+                </p>
                 </div>
 
                 <div className="flex justify-start py-4">
-                    <IdeasConfigDialog
-                        idea={idea}
-                        onDelete={onDelete}
-                        isIdeaOwner={isIdeaOwner}
-                        isLobbyOwner={isLobbyOwner}
-                        selectIdea={selectIdea}
-                    />
+                <IdeasConfigDialog
+                    idea={currentIdea}
+                    onDelete={onDelete}
+                    isIdeaOwner={isIdeaOwner}
+                    isLobbyOwner={isLobbyOwner}
+                    selectIdea={selectIdea}
+                />
                 </div>
                 
 
@@ -128,9 +194,11 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
                         onSessionEnd={() => {
                             setActiveVoting(false)
                             setActiveSessionId(null)
+                            refetchAll()
                         }}/> 
                     ) : (
-                        <SuggestVoteDialog onVoteStart={setActiveVoting} ideaId={idea._id.toString()} lobbyId={lobby._id.toString()} onSuggestChange={refetchSuggestions}/>
+                        <SuggestVoteDialog onVoteStart={setActiveVoting} ideaId={idea._id.toString()}
+                        lobbyId={lobby._id.toString()} onSuggestChange={refetchSuggestions}/>
 
                     )}
 
@@ -225,7 +293,7 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Proposals History</p>
                     </div>
 
-                    <SuggestionsList suggests={suggestions}/>
+                    <SuggestionsList suggests={suggestions} isLobbyOwner={isLobbyOwner} onDelete={refetchSuggestions}/>
 
                 </div>
 

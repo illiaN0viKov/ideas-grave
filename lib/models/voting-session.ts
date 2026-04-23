@@ -42,6 +42,12 @@ const VotingSessionSchema = new Schema<IVotingSession>(
       default: "pending",
     },
 
+    type: {
+      type: String,
+      enum: ["change", "abandon"],
+      required: true,
+    },
+
     payload: {
       newName: { type: String },
     },

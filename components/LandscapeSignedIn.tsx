@@ -35,16 +35,18 @@ export default async function LandscapeSignedIn() {
 
     const {lobbies, session, ideas} = await getLobbiesAndIdeas()
 
+    if (!session) return
+
 
   return (
     <div className="space-y-12">
       <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
-        <SignedInProfile userEmail={session?.user?.email} lobbyCount={lobbies?.length} ideaCount={ideas?.length} />
+        <SignedInProfile userEmail={session.user.email} lobbyCount={lobbies?.length} ideaCount={ideas?.length} />
         {/* <LobbiesClient lobbies={lobbies} />
         <div className="lg:col-span-2">
           <IdeasClient />
         </div> */}
-        <LandscapeSignedInClient lobbies={lobbies}/>
+        <LandscapeSignedInClient lobbies={lobbies} userId={session.user.id}/>
       </div>
 
     </div>

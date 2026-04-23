@@ -17,6 +17,7 @@ import { boolean } from "better-auth"
 import { SuggestionType } from "@/lib/types/types.project"
 import { createSuggestion } from "@/lib/actions/suggestion"
 import { createVotingSession } from "@/lib/actions/vote"
+import { Plus } from "lucide-react"
 
 type Step = "suggestion" | "voting"
 type VoteType = "abandon" | "change" | null
@@ -81,6 +82,7 @@ export default function SuggestVoteDialog({onVoteStart, onSuggestChange, ideaId,
       <DialogTrigger asChild>
         <Button variant="outline"
           className="h-20 py-6 px-6 text-sm font-semibold rounded-xl">
+            <Plus/>
             Suggest | Vote</Button>
       </DialogTrigger>
 
@@ -149,7 +151,7 @@ export default function SuggestVoteDialog({onVoteStart, onSuggestChange, ideaId,
                 <div className="flex flex-col gap-2">
                   {[
                     { value: "abandon", label: "Abandon", desc: "Propose to drop this idea entirely" },
-                    { value: "change_name", label: "Change name", desc: "Propose a new name for this idea" },
+                    { value: "change", label: "Change name", desc: "Propose a new name for this idea" },
                   ].map((opt) => (
                     <button
                       key={opt.value}

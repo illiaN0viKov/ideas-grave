@@ -5,9 +5,6 @@ export interface IVote extends Document {
   session: Types.ObjectId;
   user: Types.ObjectId;
 
-//   changeVote?: "up" | "down";
-//   abandonVote?: "up" | "down";
-
   target: "change" | "abandon";
   value: "up" | "down";
 

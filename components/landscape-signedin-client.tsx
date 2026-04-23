@@ -7,7 +7,7 @@ import { IdeaType, LobbyType } from "@/lib/types/types.project";
 import { getIdeas } from "@/lib/actions/idea";
 import IdeaView from "./idea-view";
 
-export default function LandscapeSignedInClient({ lobbies }: { lobbies: LobbyType[] }) {
+export default function LandscapeSignedInClient({ lobbies, userId }: { lobbies: LobbyType[]; userId:string }) {
   const [selectedLobby, setSelectedLobby] = useState<LobbyType | null>(null);
   const [selectedIdeas, setSelectedIdeas] = useState<IdeaType[]>([]);
   const [loadingIdeas, setLoadingIdeas] = useState(false);
@@ -27,6 +27,7 @@ useEffect(() => {
     try {
       const data = await getIdeas(selectedLobby._id.toString())
       setSelectedIdeas(data)
+      setSelectedIdea(null) 
     } catch (err) {
       console.error(err)
     }
@@ -38,7 +39,12 @@ useEffect(() => {
 
   return (
     <>
-      <LobbiesClient lobbies={lobbies} onSelectLobby={setSelectedLobby} onDeleteLobby={() => setSelectedLobby(null)}
+      <LobbiesClient lobbies={lobbies} onSelectLobby={setSelectedLobby} userId={userId}
+        onDeleteLobby={() => {
+        setSelectedLobby(null)
+        setSelectedIdeas([])
+        setSelectedIdea(null)
+      }}
         onUpdateLobby={(lobby)=>setSelectedLobby(lobby)}
         />
 

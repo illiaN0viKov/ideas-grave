@@ -1,4 +1,9 @@
+
 import { SuggestionType } from "@/lib/types/types.project"
+import { Button } from "./ui/button"
+import { Trash2 } from "lucide-react"
+import { useSession } from "@/lib/auth/auth-client"
+import { deleteSuggestion } from "@/lib/actions/suggestion"
 
 const COLORS = [
   "bg-violet-400",
@@ -21,10 +26,22 @@ function getColor(authorId: string) {
 
 interface Props {
   suggests: SuggestionType[]
+  isLobbyOwner:boolean
+  onDelete: () => void
 }
 
-export default function SuggestionsList({ suggests }: Props) {
+export default function SuggestionsList({ suggests, isLobbyOwner, onDelete }: Props) {
   const items = suggests
+
+  async function handleDeleteSuggestion(id:string) {
+    try {
+      await deleteSuggestion({ suggestionId: id })
+      onDelete()
+    } catch (error) {
+      console.error("Failed to delete suggestion:", error)
+    }
+  }
+
 
   if (items.length === 0) {
     return (
@@ -37,7 +54,7 @@ export default function SuggestionsList({ suggests }: Props) {
   return (
     <div className="flex flex-col gap-3">
       {items.map((s) => (
-        <div key={s._id.toString()} className="overflow-hidden">
+        <div key={s._id.toString()} className="overflow-hidden relative">
           
           <div className={`h-1 w-full ${getColor(s.author)}`} />
 
@@ -50,6 +67,17 @@ export default function SuggestionsList({ suggests }: Props) {
               {s.content}
             </p>
           </div>
+
+          {isLobbyOwner && (
+            <Button 
+              size="lg"
+              variant="ghost"
+              className="absolute top-9 right-2 h-7 w-7 p-0 text-slate-400 hover:text-red-500"
+              onClick={() => handleDeleteSuggestion(s._id.toString())}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          )}
 
         </div>
       ))}

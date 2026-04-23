@@ -13,7 +13,7 @@ import {
 } from "./ui/dialog";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IdeaType } from "@/lib/types/types.project";
 import { deleteIdea, updateIdea } from "@/lib/actions/idea";
 
@@ -47,6 +47,12 @@ export default function IdeasConfigDialog({
   const [loading, setLoading] = useState(false);
 
   const isCreator = isIdeaOwner
+
+      useEffect(() => {
+        setTitle(idea.title)
+        setStatus(idea.status)
+        setDescription(idea.description)
+    }, [idea])
 
         async function handleSave() {
         setLoading(true);
@@ -143,9 +149,10 @@ export default function IdeasConfigDialog({
             </Button>
           )}
 
-            <Button onClick={handleSave} disabled={loading}>
-            {!isCreator ? "Close" : loading ? "Saving..." : "Save"}
-            </Button>
+        <Button onClick={!isCreator ? () => setOpen(false) : handleSave} disabled={isCreator && loading}>
+          {!isCreator ? "Close" : loading ? "Saving..." : "Save"}
+        </Button>
+        
         </DialogFooter>
       </DialogContent>
     </Dialog>

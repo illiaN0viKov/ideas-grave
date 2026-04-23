@@ -108,3 +108,44 @@ function generateInviteCode(length = 8) {
 
   return code
 }
+
+export async function joinLobby({ inviteCode }: { inviteCode: string }) {
+  await connectDB()
+
+  const session = await getSession()
+  const userId = session?.user?.id
+  if (!userId) throw new Error("Unauthorized")
+
+  const lobby = await Lobby.findOne({ inviteCode: inviteCode.trim().toUpperCase() })
+  if (!lobby) throw new Error("Invalid invite code")
+
+  const alreadyMember = lobby.members.some(
+    (m: Types.ObjectId) => m.toString() === userId
+  )
+  if (alreadyMember) throw new Error("You are already a member of this lobby")
+
+  await Lobby.findByIdAndUpdate(lobby._id, {
+    $push: { members: new Types.ObjectId(userId) }
+  })
+
+  revalidatePath("/")
+}
+
+export async function leaveLobby({ lobbyId }: { lobbyId: string }) {
+  await connectDB()
+
+  const session = await getSession()
+  const userId = session?.user?.id
+  if (!userId) throw new Error("Unauthorized")
+
+  const lobby = await Lobby.findById(lobbyId)
+  if (!lobby) throw new Error("Lobby not found")
+
+  if (lobby.owner.toString() === userId) throw new Error("Owner cannot leave — delete the lobby instead")
+
+  await Lobby.findByIdAndUpdate(lobbyId, {
+    $pull: { members: new Types.ObjectId(userId) }
+  })
+
+  revalidatePath("/")
+}

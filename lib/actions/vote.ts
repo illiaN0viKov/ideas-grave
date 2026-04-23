@@ -62,24 +62,35 @@ export async function endVotingSession({ sessionId, ideaId }: { sessionId: strin
   await votingSession.save()
 
     if (approved) {
-    if (votingSession.type === "abandon") {
+      if (votingSession.type === "abandon") {
         await Idea.findByIdAndUpdate(votingSession.idea, { status: "abandoned" })
         await createSuggestion({
-        content: "Idea was abandoned by vote",
-        ideaId,
-        author: votingSession.initiator.toString(),
-        lobbyId: lobby._id.toString()
+          content: "Idea was abandoned by vote",
+          ideaId,
+          author: votingSession.initiator.toString(),
+          lobbyId: lobby._id.toString()
         })
-    }
-    if (votingSession.type === "change" && votingSession.payload?.newName) {
+      }
+
+      if (votingSession.type === "change" && votingSession.payload?.newName) {
         await Idea.findByIdAndUpdate(votingSession.idea, { title: votingSession.payload.newName })
         await createSuggestion({
-        content: `Idea was renamed to "${votingSession.payload.newName}" by vote`,
+          content: `Idea was renamed to "${votingSession.payload.newName}" by vote`,
+          ideaId,
+          author: votingSession.initiator.toString(),
+          lobbyId: lobby._id.toString()
+        })
+      }
+      
+    } else {
+      await createSuggestion({
+        content: votingSession.type === "abandon"
+          ? "Vote to abandon this idea was rejected"
+          : `Vote to rename idea to "${votingSession.payload?.newName}" was rejected`,
         ideaId,
         author: votingSession.initiator.toString(),
         lobbyId: lobby._id.toString()
-        })
-    }
+      })
     }
 
   revalidatePath("/")
@@ -109,7 +120,10 @@ export async function castVote({
   )
 
   // check if we should auto-close
-  const lobby = await Lobby.findOne({ ideas: ideaId }) // or however you reference lobby
+  const idea = await Idea.findById(ideaId)
+  if (!idea) throw new Error("Idea not found")
+  const lobby = await Lobby.findById(idea.lobby)
+
   const memberCount = lobby?.members?.length ?? 0
   const votes = await Vote.find({ session: sessionId })
   const ups = votes.filter(v => v.value === "up").length
@@ -129,6 +143,9 @@ export async function castVote({
 export async function getActiveVotingSession(ideaId: string) {
   await connectDB()
 
+  const session = await getSession()  // get current user
+  const userId = session?.user?.id
+
   const votingSession = await VotingSession.findOne({
     idea: new Types.ObjectId(ideaId),
     status: "active",
@@ -145,7 +162,7 @@ export async function getActiveVotingSession(ideaId: string) {
     ups,
     downs,
     totalVotes: votes.length,
-    userVote: votes.find(v => v.user.toString())?.value ?? null,
+    userVote: votes.find(v => v.user.toString() === userId)?.value ?? null, // compare against current user
   }))
 }
 

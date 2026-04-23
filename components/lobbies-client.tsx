@@ -11,21 +11,34 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { deleteLobby, updateLobby } from "@/lib/actions/lobby";
-import { Edit2, MoreVertical, Trash2 } from "lucide-react";
+import { deleteLobby, leaveLobby, updateLobby } from "@/lib/actions/lobby";
+import { Edit2, LogOut, MoreVertical, Trash2 } from "lucide-react";
 import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Dialog } from "./ui/dialog";
 
-export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,onUpdateLobby  }: 
-  { lobbies: LobbyType[], onSelectLobby: (lobby: LobbyType | null) => void, onDeleteLobby:()=>void,
-    onUpdateLobby:(lobby: LobbyType | null) => void,
-   }) {
+export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby, onUpdateLobby, userId }: 
+  { lobbies: LobbyType[], onSelectLobby: (lobby: LobbyType | null) => void, onDeleteLobby: () => void,
+    onUpdateLobby: (lobby: LobbyType | null) => void, userId: string }) {
   const [selectedLobbyId, setSelectedLobbyId] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false)
       const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+      const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+
+        async function handleLeave() {
+          if (!selectedLobbyId) return
+          try {
+            await leaveLobby({ lobbyId: selectedLobbyId })
+            onDeleteLobby() // reuse — clears selected lobby in parent
+            setShowLeaveConfirm(false)
+            setSelectedLobbyId(null)
+          } catch (err) {
+            console.error(err)
+          }
+        }
       
     
   
@@ -64,6 +77,7 @@ export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,on
           const handleSelectLobby = (lobby: LobbyType) => {
             setSelectedLobbyId(lobby._id.toString());
             onSelectLobby(lobby);
+
           };
 
       async function handleUpdate(e: React.FormEvent) {
@@ -101,6 +115,8 @@ export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,on
     }
   }, [parent])
 
+  
+
   return (
     <section className="min-h-[320px] rounded-[2rem] border border-black/10 bg-black/5 p-10 sm:p-12">
       <div className="flex items-start justify-between gap-4">
@@ -121,6 +137,8 @@ export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,on
 
         {lobbies.map((lobby) => {
           const isActive = lobby._id.toString() === selectedLobbyId;
+          const isOwner = lobby.owner.toString() === userId
+
           
 
           return (
@@ -152,24 +170,31 @@ export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,on
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                    <Edit2 className="mr-2 h-4 w-4" />
-                    Edit
+                <DropdownMenuContent>
+                {isOwner ? (
+                  <>
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                      <Edit2 className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive" onClick={() => setShowDeleteConfirm(true)}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem className="text-destructive" onClick={() => setShowLeaveConfirm(true)}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Leave
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={()=>setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
+                )}
                 </DropdownMenuContent>
               </DropdownMenu>
               
 
             </div>
               )}
+              
             </div>
           );
         })}
@@ -228,9 +253,9 @@ export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,on
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete Idea?</DialogTitle>
+              <DialogTitle>Delete Lobby?</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete the idea? This action cannot be undone.
+                Are you sure you want to delete the lobby? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -238,11 +263,26 @@ export default function LobbiesClient({ lobbies, onSelectLobby, onDeleteLobby,on
                 Cancel
               </Button>
               <Button variant="destructive" onClick={handleDelete}>
-                Delete Idea
+                Delete Lobby
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+              <Dialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Leave Lobby?</DialogTitle>
+            <DialogDescription>
+              You will lose access to this lobby and its ideas.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLeaveConfirm(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleLeave}>Leave</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
     </section>
