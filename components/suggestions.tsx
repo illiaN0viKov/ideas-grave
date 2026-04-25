@@ -24,14 +24,27 @@ function getColor(authorId: string) {
   return COLORS[Math.abs(hash) % COLORS.length]
 }
 
+interface User {
+  id: string
+  email: string
+}
+
 interface Props {
   suggests: SuggestionType[]
   isLobbyOwner:boolean
   onDelete: () => void
+  users:User[]
+  
 }
 
-export default function SuggestionsList({ suggests, isLobbyOwner, onDelete }: Props) {
+export default function SuggestionsList({ suggests, isLobbyOwner, onDelete, users }: Props) {
   const items = suggests
+
+    function getAuthorName(authorId: string) {
+    const user = users.find((u) => u.id === authorId)
+    if (!user) return authorId
+    return user.email.split('@')[0]
+  }
 
   async function handleDeleteSuggestion(id:string) {
     try {
@@ -60,7 +73,7 @@ export default function SuggestionsList({ suggests, isLobbyOwner, onDelete }: Pr
 
           <div className="px-4 pt-3 pb-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
-              {s.author}
+              {getAuthorName(s.author.toString())}
             </p>
 
             <p className="text-sm leading-relaxed text-slate-700">

@@ -15,6 +15,7 @@ import SuggestVoteDialog from "./suggest-vote-dialog"
 import VotingTracker from "./voting-tracker"
 import { getSuggestions } from "@/lib/actions/suggestion"
 import { getActiveVotingSession } from "@/lib/actions/vote"
+import { getUsers } from "@/lib/actions/users"
 
 interface Props {
     idea: IdeaType
@@ -52,6 +53,8 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
     const [activeVoting, setActiveVoting] = useState(false)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [currentIdea, setCurrentIdea] = useState<IdeaType>(idea)
+    const [users, setUsers] = useState<{ id: string; email: string }[]>([])
+
 
 
         function updateIdeaLocal(updated: IdeaType) {
@@ -62,11 +65,13 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
     useEffect(() => {
         async function fetchInitialData() {
             try {
-                const [suggestions, activeSession] = await Promise.all([
+                const [suggestions, activeSession, lobbyUsers] = await Promise.all([
                     getSuggestions(idea._id.toString()),
                     getActiveVotingSession(idea._id.toString()),
+                    getUsers(lobby.members.map(m => m.toString())),
                 ])
                 setSuggestions(suggestions)
+                setUsers(lobbyUsers)
                 if (activeSession) {
                     setActiveVoting(true)
                     setActiveSessionId(activeSession._id)
@@ -293,7 +298,7 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Proposals History</p>
                     </div>
 
-                    <SuggestionsList suggests={suggestions} isLobbyOwner={isLobbyOwner} onDelete={refetchSuggestions}/>
+                    <SuggestionsList users={users} suggests={suggestions} isLobbyOwner={isLobbyOwner} onDelete={refetchSuggestions}/>
 
                 </div>
 
