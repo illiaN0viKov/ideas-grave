@@ -54,7 +54,7 @@ useEffect(() => {
         )}
 
         {selectedLobby && selectedIdea && (
-            <IdeaView idea={selectedIdea} selectIdea={setSelectedIdea}  lobby={selectedLobby} onDelete={() => setRefreshIdeas(prev => prev + 1)} />
+            <IdeaView idea={selectedIdea} onBackRefetch={() => setRefreshIdeas(prev => prev + 1)} selectIdea={setSelectedIdea}  lobby={selectedLobby} onDelete={() => setRefreshIdeas(prev => prev + 1)} />
         )}
 
         {selectedLobby && isPending && (

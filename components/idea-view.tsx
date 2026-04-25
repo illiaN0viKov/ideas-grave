@@ -22,9 +22,10 @@ interface Props {
     lobby: LobbyType
     selectIdea: (idea: IdeaType | null) => void
     onDelete: () => void
+    onBackRefetch:()=>void
 }
 
-export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
+export default function IdeaView({ idea, selectIdea, lobby, onDelete, onBackRefetch }: Props) {
 
 
     // useEffect(() => {
@@ -101,6 +102,7 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
         }
     }
 
+
     async function refetchSuggestions() {
         const suggestions = await getSuggestions(idea._id.toString())
         setSuggestions(suggestions)
@@ -130,7 +132,8 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete }: Props) {
                 <Button
                     variant="ghost"
                     size="lg"
-                    onClick={() => selectIdea(null)}
+                    onClick={() => {selectIdea(null);
+                        onBackRefetch()}}
                     className="h-8 w-8 p-0 -ml-2"
                 >
                     <ArrowLeft className="h-8 w-8" />

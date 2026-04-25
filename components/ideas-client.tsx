@@ -74,7 +74,7 @@ export default function IdeasClient({ lobby, ideas, onCreate, onIdeaSelect }: Pr
       {/* Content */}
       <div className="space-y-4">
         {ideas.length > 0 ? (
-          <Ideas ideas={ideas} selectIdea={onIdeaSelect}/>
+          <Ideas ideas={ideas} selectIdea={onIdeaSelect} />
         ) : (
           <div className="rounded-3xl border border-black/10 bg-white p-8 text-slate-600">
             No ideas have been added yet.
