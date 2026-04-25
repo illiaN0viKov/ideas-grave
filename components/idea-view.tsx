@@ -47,7 +47,6 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete, onBackRefe
     const isLobbyOwner = session.data?.user.id.toString() === lobby.owner.toString()
 
     const [open, setOpen] = useState(false)
-    const [description, setDescription] = useState(idea.description ?? "")
     const [suggestions, setSuggestions] = useState<SuggestionType[] | []>([])
     const [saving, setSaving] = useState(false)
 
@@ -55,6 +54,8 @@ export default function IdeaView({ idea, selectIdea, lobby, onDelete, onBackRefe
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [currentIdea, setCurrentIdea] = useState<IdeaType>(idea)
     const [users, setUsers] = useState<{ id: string; email: string }[]>([])
+    const [description, setDescription] = useState(currentIdea.description)
+
 
 
 
